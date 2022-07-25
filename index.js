@@ -27,8 +27,9 @@ async function generateIssuesNotes(commits) {
     let s = "";
     let issues = [];
     for (let commit of commits) {
-        if (commit.message.match(issueRegex)) {
-            issues.push(commit.message.split(" ").replace("#", ""));
+        let match = commit.message.match(issueRegex);
+        if (match != null) {
+            issues.push(match[0].split(" ")[1].replace("#", ""));
         }
     }
     let bugFixes = [];
