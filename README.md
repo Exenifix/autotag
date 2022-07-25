@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish New Release
-        uses: Exenifix/autotag@v1.0.1
+        uses: Exenifix/autotag@v1.1.0
 ```
 
 ### Writing commits
