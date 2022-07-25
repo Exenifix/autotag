@@ -1,6 +1,8 @@
 const core = require("@actions/core");
 const github = require('@actions/github');
 
+const tagRegex = /\[(?:major|patch|feature)]/g
+
 function generateNotes(commits) {
     let majorCommits = [];
     let featureCommits = [];
@@ -38,7 +40,7 @@ function generateNotes(commits) {
 }
 
 function commitsToString(commits) {
-    return commits.map(e => `- ${e.id} ${e.message}`).join("\n") + "\n";
+    return commits.map(e => `- ${e.id} ${e.message.replace(tagRegex, "")}`).join("\n") + "\n";
 }
 
 function getTag(arr) {

@@ -9005,6 +9005,8 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(115);
 const github = __nccwpck_require__(3007);
 
+const tagRegex = /\[(?:major|patch|feature)]/g
+
 function generateNotes(commits) {
     let majorCommits = [];
     let featureCommits = [];
@@ -9042,7 +9044,7 @@ function generateNotes(commits) {
 }
 
 function commitsToString(commits) {
-    return commits.map(e => `- ${e.id} ${e.message}`).join("\n") + "\n";
+    return commits.map(e => `- ${e.id} ${e.message.replace(tagRegex, "")}`).join("\n") + "\n";
 }
 
 function getTag(arr) {

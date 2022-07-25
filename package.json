@@ -1,14 +1,11 @@
 {
-  "name": "test-js-workflow",
-  "version": "1.0.0",
+  "name": "autotag",
+  "version": "1.0.1",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Exenifix",
+  "license": "MIT",
+  "description": "JavaScript GitHub workflow for automatically tagging releases and creating release notes.",
   "dependencies": {
     "@actions/core": "^1.9.0",
     "@actions/github": "^5.0.3"
