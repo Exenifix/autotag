@@ -159,7 +159,7 @@ var ExitCode;
 // Variables
 //-----------------------------------------------------------------------
 /**
- * Sets env variable for this action and future workflows in the job
+ * Sets env variable for this action and future actions in the job
  * @param name the name of the variable to set
  * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
  */
@@ -187,7 +187,7 @@ function setSecret(secret) {
 }
 exports.setSecret = setSecret;
 /**
- * Prepends inputPath to the PATH (for this action and future workflows)
+ * Prepends inputPath to the PATH (for this action and future actions)
  * @param inputPath
  */
 function addPath(inputPath) {
@@ -510,7 +510,7 @@ class OidcClient {
             allowRetries: allowRetry,
             maxRetries: maxRetry
         };
-        return new http_client_1.HttpClient('workflows/oidc-client', [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
+        return new http_client_1.HttpClient('actions/oidc-client', [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
     }
     static getRequestToken() {
         const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
