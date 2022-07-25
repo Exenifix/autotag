@@ -57,7 +57,7 @@ async function generateIssuesNotes(commits) {
         s += issuesToString(featuresImplemented);
     }
     if (otherIssues.length > 0) {
-        s += "## Issues Closed";
+        s += "## Issues Closed\n";
         s += issuesToString(otherIssues);
     }
 
@@ -109,7 +109,7 @@ function commitsToString(commits) {
 }
 
 function issuesToString(issues) {
-    return issues.map(e => `- ${e.number} - ${e.title}`).join("\n") + "\n";
+    return issues.map(e => `- #${e.number} - ${e.title}`).join("\n") + "\n";
 }
 
 function getTag(arr) {
