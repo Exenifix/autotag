@@ -124,11 +124,11 @@ function getNextReleaseTag(previousTag, commits) {
     }
     let isMajorRelease = anyCommitIncludes(commits, "[major]");
     if (isMajorRelease) {
-        return getTag([tag[0] + 1, 0, 0]);
+        return getTag([tag[0] + 1, 0]);
     }
     let isFeatureRelease = anyCommitIncludes(commits, "[feature]");
     if (isFeatureRelease) {
-        return getTag([tag[0], tag[1] + 1, 0]);
+        return getTag([tag[0], tag[1] + 1]);
     }
     tag[2]++;
     return getTag(tag);
