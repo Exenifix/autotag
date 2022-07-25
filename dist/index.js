@@ -9042,7 +9042,7 @@ function generateNotes(commits) {
 }
 
 function commitsToString(commits) {
-    return commits.map(e => `- ${e.id} ${e.message}`).join("\n");
+    return commits.map(e => `- ${e.id} ${e.message}`).join("\n") + "\n";
 }
 
 function getTag(arr) {
