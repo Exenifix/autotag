@@ -10,16 +10,16 @@ const defaultParams = {
     repo: github.context.repo.repo
 };
 
-async function getIssueLabels(issueId) {
+async function getIssue(issueId) {
     try {
-        let response = await octokit.request("GET /repos/{owner}/{repo}/issues/{issue_number}/labels",
+        let response = await octokit.request("GET /repos/{owner}/{repo}/issues/{issue_number}",
             {
                 ...defaultParams,
                 issue_number: issueId
             });
-        return response.data.map(e => e.name.toLowerCase());
+        return response.data;
     } catch (RequestError) {
-        return [];
+        return null;
     }
 }
 
@@ -29,14 +29,17 @@ async function generateIssuesNotes(commits) {
     for (let commit of commits) {
         let match = commit.message.match(issueRegex);
         if (match != null) {
-            issues.push(match[0].split(" ")[1].replace("#", ""));
+            let issue = await getIssue(match[0].split(" ")[1].replace("#", ""));
+            if (issue != null) {
+                issues.push();
+            }
         }
     }
     let bugFixes = [];
     let featuresImplemented = [];
     let otherIssues = [];
     for (let issue of issues) {
-        let labels = await getIssueLabels(issue);
+        let labels = issue.labels;
         if (labels.includes("bug")) {
             bugFixes.push(issue);
         } else if (["enhancement", "suggestion", "feature"].some(e => labels.includes(e))) {
@@ -106,7 +109,7 @@ function commitsToString(commits) {
 }
 
 function issuesToString(issues) {
-    return "#" + issues.join("\n#") + "\n";
+    return issues.map(e => `- ${e.number} - ${e.title}`).join("\n") + "\n";
 }
 
 function getTag(arr) {
