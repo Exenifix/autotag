@@ -1,0 +1,10 @@
+name: "AutoTag"
+description: "Automatically publishes release and generates release notes based on commits"
+inputs:
+  GITHUB_TOKEN:
+    required: true
+    description: "Your github token"
+    default: ${{ github.token }}
+runs:
+  using: "node16"
+  main: "dist/index.js"
