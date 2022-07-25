@@ -9035,7 +9035,7 @@ async function generateIssuesNotes(commits) {
         if (match != null) {
             let issue = await getIssue(match[0].split(" ")[1].replace("#", ""));
             if (issue != null) {
-                issues.push();
+                issues.push(issue);
             }
         }
     }
