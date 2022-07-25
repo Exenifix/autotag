@@ -9005,9 +9005,70 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(115);
 const github = __nccwpck_require__(3007);
 
-const tagRegex = /\[(?:major|patch|feature)]/g
+const octokit = github.getOctokit(core.getInput("GITHUB_TOKEN"));
 
-function generateNotes(commits) {
+const tagRegex = /\[(?:major|patch|feature)]/g;
+const issueRegex = /(clos|fix|resolv)(e|es|ed) #\d+/g;
+const defaultParams = {
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo
+};
+
+async function getIssueLabels(issueId) {
+    try {
+        let response = await octokit.request("GET /repos/{owner}/{repo}/issues/{issue_number}/labels",
+            {
+                ...defaultParams,
+                issue_number: issueId
+            });
+        return response.data.map(e => e.name.toLowerCase());
+    } catch (RequestError) {
+        return [];
+    }
+}
+
+async function generateIssuesNotes(commits) {
+    let s = "";
+    let issues = [];
+    for (let commit of commits) {
+        if (commit.message.match(issueRegex)) {
+            issues.push(commit.message.split(" ").replace("#", ""));
+        }
+    }
+    let bugFixes = [];
+    let featuresImplemented = [];
+    let otherIssues = [];
+    for (let issue of issues) {
+        let labels = await getIssueLabels(issue);
+        if (labels.includes("bug")) {
+            bugFixes.push(issue);
+        } else if (["enhancement", "suggestion", "feature"].some(e => labels.includes(e))) {
+            featuresImplemented.push(issue);
+        } else {
+            otherIssues.push(issue);
+        }
+    }
+    if (bugFixes.length > 0) {
+        s += "## Bugfixes\n";
+        s += issuesToString(bugFixes);
+    }
+    if (featuresImplemented.length > 0) {
+        s += "## Features Implemented\n";
+        s += issuesToString(featuresImplemented);
+    }
+    if (otherIssues.length > 0) {
+        s += "## Issues Closed";
+        s += issuesToString(otherIssues);
+    }
+
+    return s;
+}
+
+async function generateReleaseNotes(commits) {
+    return await generateIssuesNotes(commits) + "\n" + generateCommitNotes(commits);
+}
+
+function generateCommitNotes(commits) {
     let majorCommits = [];
     let featureCommits = [];
     let patchCommits = [];
@@ -9047,6 +9108,10 @@ function commitsToString(commits) {
     return commits.map(e => `- ${e.id} ${e.message.replace(tagRegex, "")}`).join("\n") + "\n";
 }
 
+function issuesToString(issues) {
+    return "#" + issues.join("\n#") + "\n";
+}
+
 function getTag(arr) {
     return "v" + arr.join(".");
 }
@@ -9057,42 +9122,31 @@ function anyCommitIncludes(commits, value) {
 
 function getNextReleaseTag(previousTag, commits) {
     let tag = previousTag.replace("v", "").split(".");
-    tag = tag.map(e => parseInt(e));
+    tag = tag.map(e => parseInt(e, 10));
     while (tag.length < 3) {
         tag.push(0);
     }
     let isMajorRelease = anyCommitIncludes(commits, "[major]");
     if (isMajorRelease) {
-        return getTag([tag[0] + 1, 0, 0]);
+        return getTag([tag[0] + 1, 0]);
     }
     let isFeatureRelease = anyCommitIncludes(commits, "[feature]");
     if (isFeatureRelease) {
-        return getTag([tag[0], tag[1] + 1, 0]);
+        return getTag([tag[0], tag[1] + 1]);
     }
     tag[2]++;
     return getTag(tag);
 }
 
 async function main() {
-    let token = core.getInput("GITHUB_TOKEN");
-    if (token.length === 0) {
-        core.setFailed("No token");
-        return;
-    }
-    const octokit = github.getOctokit(token);
-
     let tag;
     let commits;
     try {
         let latestRelease = await octokit.request("GET /repos/{owner}/{repo}/releases/latest",
-            {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo
-            }
+            defaultParams
         );
         commits = await octokit.request("GET /repos/{owner}/{repo}/commits", {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            ...defaultParams,
             since: latestRelease.data.published_at
         });
         commits = commits.data.map(e => {
@@ -9103,15 +9157,14 @@ async function main() {
         });
         tag = getNextReleaseTag(latestRelease.data.tag_name, commits);
     } catch (RequestError) {
-        console.log("There were no releases published before, using tag v1.0.0");
+        console.warn("There were no releases published before, using tag v1.0.0");
         tag = "v1.0.0";
         commits = github.context.payload.commits;
     }
     await octokit.request("POST /repos/{owner}/{repo}/releases", {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
+        ...defaultParams,
         tag_name: tag,
-        body: generateNotes(commits)
+        body: await generateReleaseNotes(commits)
     });
     console.log(`Successfully published new release with tag ${tag}`);
 }
