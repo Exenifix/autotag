@@ -39,7 +39,7 @@ async function generateIssuesNotes(commits) {
     let featuresImplemented = [];
     let otherIssues = [];
     for (let issue of issues) {
-        let labels = issue.labels;
+        let labels = issue.labels.map(e => e.name);
         if (labels.includes("bug")) {
             bugFixes.push(issue);
         } else if (["enhancement", "suggestion", "feature"].some(e => labels.includes(e))) {
