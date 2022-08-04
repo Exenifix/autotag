@@ -9168,6 +9168,7 @@ async function main() {
     await octokit.request("POST /repos/{owner}/{repo}/releases", {
         ...defaultParams,
         tag_name: tag,
+        name: tag,
         body: await generateReleaseNotes(commits)
     });
     console.log(`Successfully published new release with tag ${tag}`);
